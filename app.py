@@ -17,13 +17,13 @@ with app.app_context():
     db.create_all()
 
 
-@app.route('/advertisement')
+@app.route('/api/advertisement')
 def get_all_advertisements():
     advertisements = Advertisement.query.all()
     return jsonify([ad.dict() for ad in advertisements])
 
 
-@app.route('/advertisement/<int:advertisement_id>')
+@app.route('/api/advertisement/<int:advertisement_id>')
 def get_advertisement(advertisement_id):
     try:
         advertisement = Advertisement.query.get(advertisement_id)
@@ -32,7 +32,7 @@ def get_advertisement(advertisement_id):
         return jsonify({"message": "Такого объявления не существует"}), 400
 
 
-@app.route('/advertisement', methods=['POST'])
+@app.route('/api/advertisement', methods=['POST'])
 def add_advertisement():
     try:
         data = request.get_json()
@@ -44,7 +44,7 @@ def add_advertisement():
         return jsonify({"message": "Ошибка при создании объявления"}), 400
 
 
-@app.route('/advertisement/<int:advertisement_id>', methods=['DELETE'])
+@app.route('/api/advertisement/<int:advertisement_id>', methods=['DELETE'])
 def delete_advertisement(advertisement_id):
     advertisement = Advertisement.query.get(advertisement_id)
     if advertisement is None:
