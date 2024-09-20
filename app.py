@@ -1,4 +1,5 @@
 import os
+import py_eureka_client.eureka_client as eureka_client
 
 from flask import Flask, request, jsonify
 from models import db, Advertisement
@@ -8,10 +9,15 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:1@localhost:1978/microAdvertisements'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+EUREKA_SERVER = "http://localhost:8761/eureka"
+eureka_client.init(eureka_server=EUREKA_SERVER,
+                   app_name="advertisement",
+                   instance_id="advertisement-instance",
+                   instance_port=5000,
+                   instance_host="127.0.0.1")
+
 db.init_app(app)
-
 app.debug = True
-
 with app.app_context():
     # Если надо поменять уже существующую бд, то использовать инструмент переноса Alembic!
     db.create_all()
@@ -42,6 +48,10 @@ def add_advertisement():
         return jsonify({"message": "Объявление создано", "data": data}), 201
     except Exception as e:
         return jsonify({"message": "Ошибка при создании объявления"}), 400
+
+
+# def get_service_url():
+#     serviceInstance = eureka_client.get_instance(EUREKA_SERVER, 'discussions')
 
 
 @app.route('/api/advertisement/<int:advertisement_id>', methods=['DELETE'])
