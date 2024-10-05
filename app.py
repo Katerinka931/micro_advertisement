@@ -1,6 +1,7 @@
 import os
-import py_eureka_client.eureka_client as eureka_client
+import requests
 
+from py_eureka_client import eureka_client
 from flask import Flask, request, jsonify
 from models import db, Advertisement
 
@@ -23,6 +24,13 @@ with app.app_context():
     db.create_all()
 
 
+async def get_service_address_by_service_name(service):
+    """Получение адреса микросервиса по его названию"""
+    applications = await eureka_client.get_applications(EUREKA_SERVER)
+    instance = applications.get_application(service).instances[0]
+    return instance.homePageUrl
+
+
 @app.route('/api/advertisement')
 def get_all_advertisements():
     advertisements = Advertisement.query.all()
@@ -30,10 +38,15 @@ def get_all_advertisements():
 
 
 @app.route('/api/advertisement/<int:advertisement_id>')
-def get_advertisement(advertisement_id):
+async def get_advertisement(advertisement_id):
+    url = await get_service_address_by_service_name('DISCUSSIONS')  # todo как-то по-другому? если останется время
+    count = requests.get(f'{url}api/forum/discussions/count_advertisement/{advertisement_id}').text
+
     try:
         advertisement = Advertisement.query.get(advertisement_id)
-        return jsonify(advertisement.dict()), 200
+        advertisement_dict = advertisement.dict()
+        advertisement_dict.update({'count': count})
+        return jsonify(advertisement_dict), 200
     except AttributeError:
         return jsonify({"message": "Такого объявления не существует"}), 400
 
@@ -50,10 +63,6 @@ def add_advertisement():
         return jsonify({"message": "Ошибка при создании объявления"}), 400
 
 
-# def get_service_url():
-#     serviceInstance = eureka_client.get_instance(EUREKA_SERVER, 'discussions')
-
-
 @app.route('/api/advertisement/<int:advertisement_id>', methods=['DELETE'])
 def delete_advertisement(advertisement_id):
     advertisement = Advertisement.query.get(advertisement_id)
@@ -62,6 +71,7 @@ def delete_advertisement(advertisement_id):
 
     db.session.delete(advertisement)
     db.session.commit()
+    # todo тут оповестить дискуссии об удалении объявления и удалить все связанные (брокер???)
     return jsonify({"message": "Объявление удалено"}), 200
 
 
