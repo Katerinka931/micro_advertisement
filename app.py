@@ -3,6 +3,7 @@ import requests
 
 from py_eureka_client import eureka_client
 from flask import Flask, request, jsonify
+from broker_pub import send_order
 from models import db, Advertisement
 
 app = Flask(__name__)
@@ -69,9 +70,10 @@ def delete_advertisement(advertisement_id):
     if advertisement is None:
         return jsonify({"message": "Объявление не найдено"}), 404
 
+    send_order(advertisement_id)
+
     db.session.delete(advertisement)
     db.session.commit()
-    # todo тут оповестить дискуссии об удалении объявления и удалить все связанные (брокер???)
     return jsonify({"message": "Объявление удалено"}), 200
 
 
