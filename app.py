@@ -1,5 +1,6 @@
 import os
 import requests
+from flask_cors import CORS
 
 from py_eureka_client import eureka_client
 from flask import Flask, request, jsonify
@@ -7,6 +8,7 @@ from broker_pub import send_order
 from models import db, Advertisement
 
 app = Flask(__name__)
+CORS(app)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:1@localhost:1978/microAdvertisements'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
