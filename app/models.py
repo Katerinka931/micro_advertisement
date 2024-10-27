@@ -1,6 +1,5 @@
-from flask_sqlalchemy import SQLAlchemy
+from app.database import db
 
-db = SQLAlchemy()
 
 class Advertisement(db.Model):
     __tablename__ = 'advertisement'
@@ -17,8 +16,6 @@ class Advertisement(db.Model):
         self.description = description
         self.price = price
         self.phone = phone
-        # self.photo = photo
-        # db.session.add(self)
 
     def dict(self):
         return {

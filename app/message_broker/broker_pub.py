@@ -1,6 +1,6 @@
 import pika
 
-from connector import rabbitmq_connector
+from app.decorators.connector import rabbitmq_connector
 
 
 @rabbitmq_connector(queue_name='advertisement')
