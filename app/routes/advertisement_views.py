@@ -1,12 +1,14 @@
 import asyncio
+from threading import Thread
+
 import requests
 
-from flask import request, jsonify
+from flask import request, jsonify, current_app
 from .init import advertisement_bp
 from ..config import EUREKA_SERVER
 from ..database import db
 from app.decorators.require_role import role_required
-from ..message_broker.broker_pub import send_order
+from ..message_broker.broker_pub import send_order, receive_orders
 from ..models import Advertisement
 from ..utils import get_service_address_by_service_name
 
@@ -56,6 +58,7 @@ def delete_advertisement(advertisement_id):
 
     send_order(advertisement_id)
 
-    db.session.delete(advertisement)
-    db.session.commit()
-    return jsonify({"message": "Объявление удалено"}), 200
+    thread = Thread(target=receive_orders, args=(current_app,))  # Передаем контекст приложения
+    thread.start()
+
+    return jsonify({"message": "Объявление будет удалено в ближайшее время"}), 200
