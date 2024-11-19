@@ -23,8 +23,12 @@ def get_all_advertisements():
 @advertisement_bp.route('/api/advertisement/<int:advertisement_id>', methods=['GET'])
 @role_required('read')
 def get_advertisement(advertisement_id):
+    headers = {
+        'X-User-Name': request.headers.get('X-User-Name'),
+        'X-User-Role': request.headers.get('X-User-Role')
+    }
     url = asyncio.run(get_service_address_by_service_name('DISCUSSIONS', EUREKA_SERVER))
-    count = requests.get(f'{url}api/forum/discussions/count_advertisement/{advertisement_id}').text
+    count = requests.get(f'{url}api/forum/discussions/count_advertisement/{advertisement_id}', headers=headers).text
 
     advertisement = Advertisement.query.get(advertisement_id)
     if advertisement is None:
